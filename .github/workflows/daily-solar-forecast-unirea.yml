@@ -1,0 +1,109 @@
+name: Daily Solar Forecast CRIPVSOL ENERGY Unirea
+
+on:
+  schedule:
+    # Run at 10:00 Bucharest time
+    - cron: "0 8 * * *" # 10:00 EEST (UTC+3) during summer
+
+  workflow_dispatch: # Allow manual triggering for testing
+
+jobs:
+  solar-forecast:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache uv installation
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/bin
+          key: ${{ runner.os }}-uv-installation
+
+      - name: Install uv
+        run: |
+          if ! command -v uv &> /dev/null; then
+            echo "Installing uv..."
+            curl -LsSf https://astral.sh/uv/install.sh | sh
+          else
+            echo "uv already installed"
+          fi
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Cache Python dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/uv
+            .venv
+          key: ${{ runner.os }}-uv-${{ hashFiles('**/pyproject.toml', '**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
+
+      - name: Create email configuration
+        run: |
+          # Email configuration is now hardcoded in send_forecast_zoho.py
+          echo "Email configuration hardcoded in script"
+
+      - name: Run forecast workflow
+        run: |
+          echo "🚀 Starting Solar Forecast Workflow"
+          echo "========================================"
+          echo "Location: CRIPVSOL ENERGY SRL - Unirea (2.9 MW)"
+          echo "Time: $(date)"
+          echo "Bucharest Time: $(TZ='Europe/Bucharest' date)"
+          echo "========================================"
+
+          # Run the combined workflow script
+          uv run python scripts/run_forecast_and_email.py
+
+      - name: Upload forecast artifacts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: forecast-${{ github.run_number }}-${{ github.run_attempt }}
+          path: |
+            data_output/intraday/*latest*.csv
+            data_output/intraday/*latest*.json
+            data_output/intraday/cripvsol_unirea_forecast_*.xlsx
+            data_output/intraday/cm_forecast_system_state.json
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Upload detailed logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: error-logs-${{ github.run_number }}-${{ github.run_attempt }}
+          path: |
+            logs/
+            data_output/
+          retention-days: 7
+          if-no-files-found: ignore
+
+      # No cleanup needed - configuration is hardcoded
+
+      - name: Summary
+        run: |
+          echo "## 📊 Forecast Execution Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered by**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Execution time**: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Bucharest time**: $(TZ='Europe/Bucharest' date)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Location**: CRIPVSOL ENERGY SRL - Unirea (2.9 MW)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [[ -f "data_output/intraday/cm_forecast_summary_latest.json" ]]; then
+            echo "### 🌞 Forecast Results" >> $GITHUB_STEP_SUMMARY
+            echo '```json' >> $GITHUB_STEP_SUMMARY
+            head -20 data_output/intraday/cm_forecast_summary_latest.json >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi

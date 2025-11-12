@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# uv
+uv.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+weather_cache/
+*.log
+.env
+
+# Claude
+.claude/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Sensitive configuration
+scripts/email_config_zoho_working.json

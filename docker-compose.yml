@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  # Solar forecast email service - runs at 9 AM EET
+  solar-forecast-email:
+    build: .
+    container_name: solar-forecast-email
+    volumes:
+      - ./data_output:/app/data_output
+      - ./data_cache:/app/data_cache
+      - ./logs:/app/logs
+      - ./scripts/email_config_zoho_working.json:/app/scripts/email_config_zoho_working.json:ro
+    environment:
+      - TZ=Europe/Bucharest
+    restart: unless-stopped
+    command: ["sh", "-c", "while true; do hour=$$(date +%H); if [ $$hour -eq 9 ]; then uv run python scripts/run_forecast_and_email.py; fi; sleep 3600; done"]
+
+  # One-time forecast run
+  solar-forecast-once:
+    build: .
+    container_name: solar-forecast-once
+    volumes:
+      - ./data_output:/app/data_output
+      - ./data_cache:/app/data_cache
+      - ./logs:/app/logs
+      - ./scripts/email_config_zoho_working.json:/app/scripts/email_config_zoho_working.json:ro
+    environment:
+      - TZ=Europe/Bucharest
+    profiles:
+      - manual
+    command: ["uv", "run", "python", "scripts/run_forecast_and_email.py"]

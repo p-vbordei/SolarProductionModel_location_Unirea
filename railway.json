@@ -1,0 +1,51 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "Dockerfile"
+  },
+  "deploy": {
+    "numReplicas": 1,
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 3
+  },
+  "services": {
+    "solar-forecast": {
+      "variables": {
+        "TZ": "Europe/Bucharest",
+        "FORECAST_MODE": "continuous",
+        "SERVICE_TYPE": "forecast"
+      },
+      "startCommand": "python scripts/schedule_intraday.py",
+      "healthcheck": {
+        "path": "/health",
+        "interval": 300
+      }
+    },
+    "solar-forecast-api": {
+      "variables": {
+        "TZ": "Europe/Bucharest",
+        "SERVICE_TYPE": "api",
+        "PORT": "8000"
+      },
+      "startCommand": "python scripts/api_demo.py",
+      "healthcheck": {
+        "path": "/health",
+        "interval": 60
+      },
+      "networking": {
+        "servicePort": 8000
+      }
+    }
+  },
+  "volumes": [
+    {
+      "name": "forecast-data",
+      "mountPath": "/app/data_output"
+    },
+    {
+      "name": "forecast-cache",
+      "mountPath": "/app/data_cache"
+    }
+  ]
+}

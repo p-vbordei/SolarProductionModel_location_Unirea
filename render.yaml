@@ -1,0 +1,85 @@
+# Render Blueprint Configuration
+# This file defines all services for the Solar Production Model deployment
+
+services:
+  # Main forecasting service - continuous intraday updates
+  - type: worker
+    name: solar-forecast-intraday
+    runtime: docker
+    repo: https://github.com/YOUR_USERNAME/SolarProductionModel_v3
+    branch: deploy
+    dockerCommand: python scripts/schedule_intraday.py
+    envVars:
+      - key: TZ
+        value: Europe/Bucharest
+      - key: FORECAST_MODE
+        value: continuous
+      - key: SERVICE_TYPE
+        value: forecast
+    disk:
+      name: forecast-data
+      mountPath: /app/data_output
+      sizeGB: 10
+    healthCheckPath: /health
+    plan: starter
+
+  # Long-term forecast generator - cron job
+  - type: cron
+    name: solar-forecast-longterm
+    runtime: docker
+    repo: https://github.com/YOUR_USERNAME/SolarProductionModel_v3
+    branch: deploy
+    dockerCommand: python scripts/main_forecast.py
+    schedule: "0 2 * * *"  # Daily at 2 AM
+    envVars:
+      - key: TZ
+        value: Europe/Bucharest
+    disk:
+      name: forecast-data
+      mountPath: /app/data_output
+      sizeGB: 10
+    plan: starter
+
+  # Email service - cron job (daily at 9 AM EET)
+  - type: cron
+    name: solar-forecast-email
+    runtime: docker
+    repo: https://github.com/p-vbordei/SolarProductionModel_location_Unirea
+    branch: main
+    dockerCommand: python scripts/run_forecast_and_email.py
+    schedule: "0 9 * * *"  # Daily at 9 AM EET
+    envVars:
+      - key: TZ
+        value: Europe/Bucharest
+    disk:
+      name: forecast-data
+      mountPath: /app/data_output
+      sizeGB: 10
+    plan: starter
+
+  # API service
+  - type: web
+    name: solar-forecast-api
+    runtime: docker
+    repo: https://github.com/YOUR_USERNAME/SolarProductionModel_v3
+    branch: deploy
+    dockerCommand: python scripts/api_demo.py
+    envVars:
+      - key: TZ
+        value: Europe/Bucharest
+      - key: SERVICE_TYPE
+        value: api
+      - key: PORT
+        value: 8000
+    disk:
+      name: forecast-data
+      mountPath: /app/data_output
+      sizeGB: 10
+    healthCheckPath: /health
+    plan: starter
+
+# Shared persistent disk for all services
+databases:
+  - name: forecast-cache
+    databaseName: forecast_cache
+    plan: starter
