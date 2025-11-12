@@ -9,7 +9,7 @@ The system sends automated Excel reports with solar production forecasts for CRI
 All email settings are stored in `scripts/email_config_zoho_working.json`:
 - **SMTP**: Zoho Mail (smtp.zoho.eu:587)
 - **From**: solarforecastingservices@vollko.com
-- **Recipients**: bordeivlad@gmail.com, vpinteay@gmail.com, office@enevopower.ro
+- **Recipients**: bordeivlad@gmail.com, vpinteay@gmail.com
 - **Schedule**: 6 AM and 2 PM daily (via Docker)
 
 ## Usage

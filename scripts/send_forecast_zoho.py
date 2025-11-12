@@ -29,8 +29,6 @@ def main():
     recipients = [
         "bordeivlad@gmail.com",
         "vpinteay@gmail.com",
-        "office@enevopower.ro",
-        "alexandru.gheorghe@nepirockcastle.com",
     ]
 
     print(f"From: {smtp_settings['from_email']}")

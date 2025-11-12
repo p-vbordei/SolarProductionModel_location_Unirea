@@ -73,8 +73,7 @@ docker-compose logs -f solar-forecast-email
 ## Email Recipients
 
 - bordeivlad@gmail.com
-- vpinteay@gmail.com  
-- office@enevopower.ro
+- vpinteay@gmail.com
 
 ## Minimal Dependencies
 
