@@ -3,9 +3,9 @@
 Send Forecast Email with Zoho - Direct send using saved configuration
 """
 
-import sys
 import json
 import os
+import sys
 
 sys.path.append(".")
 from email_forecast_service import ForecastEmailService
@@ -26,10 +26,7 @@ def main():
     }
 
     # Hardcoded recipient list
-    recipients = [
-        "bordeivlad@gmail.com",
-        "vpinteay@gmail.com",
-    ]
+    recipients = ["bordeivlad@gmail.com", "vpinteay@gmail.com", "aenache525@gmail.com"]
 
     print(f"From: {smtp_settings['from_email']}")
     print(f"To: {', '.join(recipients)}")
