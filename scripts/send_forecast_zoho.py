@@ -26,7 +26,7 @@ def main():
     }
 
     # Hardcoded recipient list
-    recipients = ["bordeivlad@gmail.com", "vpinteay@gmail.com", "aenache525@gmail.com"]
+    recipients = ["bordeivlad@gmail.com", "aenache525@gmail.com"]
 
     print(f"From: {smtp_settings['from_email']}")
     print(f"To: {', '.join(recipients)}")
